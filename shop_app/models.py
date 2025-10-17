@@ -3,9 +3,9 @@ from django.utils.text import slugify
 
 # Create your models here.
 class Product(models.Model):
-    CATEGORY = (("Electronics", "ELECTRONICS"),
-                ("Groceries", "GROCERIES"),
-                ("Clothings", "CLOTHINGS")
+    CATEGORY = (("Printed", "PRINTED"),
+                ("Unisex", "UNISEX"),
+                ("Outdoor", "OUTDOOR")
                 )
     name = models.CharField(max_length=100)
     slug = models.SlugField(blank=True, null=True)
