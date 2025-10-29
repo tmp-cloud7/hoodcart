@@ -117,7 +117,7 @@ def initiate_payment(request):
             # to generate a unique transaction reference
             tx_ref = str(uuid.uuid4())
             cart_code = request.data.get("cart_code")
-            cart = Cart.object.get(cart_code=cart_code)
+            cart = Cart.objects.get(cart_code=cart_code)
             user = request.user
 
             amount = sum([item.quantity * item.product.price for item in cart.items.all()])
@@ -154,12 +154,12 @@ def initiate_payment(request):
             # Setup headers for request 
             headers = {
                 "Authorization": f"Bearer {settings.FLUTTERWAVE_SECRET_KEY}",
-                "Content_type": "application/json"
+                "Content_Type": "application/json"
             }
 
             # Api request to flutterwave
             response = requests.post(
-                'https://api.flutterwave.com/v4/payments', 
+                'https://api.flutterwave.com/v3/payments', 
                 json=flutterwave_payload,
                 headers=headers
             )
@@ -173,3 +173,48 @@ def initiate_payment(request):
         except requests.exceptions.RequestException as e:
             # Log error and return error response
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["POST"])
+def payment_callback(request):
+    status = request.GET.get("status")
+    tx_ref = request.GET.get("tx_ref")
+    transaction_id = request.GET.get("transaction_id")
+
+    user = request.user
+
+    if status =='successful':
+        # Verifying the trancaction using flutterwave api
+        headers = {
+            "Authorization": f"Bearer {settings.FLUTTERWAVE_SECRET_KEY}"
+        }
+
+        response = requests.get(f"https://api.flutterwave.com/v3/transactions/{transaction_id}/verify", headers=headers)
+        response_data = response.json()
+
+        if response_data['status'] == 'success':
+            transaction = Transaction.objects.get(ref=tx_ref)
+
+            # Confirm transaction details
+            if(response_data['data']['status'] == "successful"
+                and float(response_data['data']['amount']) == float(transaction.amount)
+                and response_data['data']['currency'] == transaction.currency):
+                # Update transaction & cart status to paid 
+                transaction.status = 'completed'
+                transaction.save()
+
+                cart = transaction.cart
+                cart.paid = True
+                cart.user = user
+                cart.save()
+
+                return Response({'message': 'Payment successful!', 'subMessage': 'You have successfully made payment'})
+            else:
+                 #Payment verification failed
+                 return Response({'message': 'Payment verification failed.', 'subMessage': 'Your payment verification has failed'})
+        else:
+            return Response({'message': 'Failed to verify transaction with Flutterwave.', 'subMessage': 'We could not complete your transaction'})
+          
+    else:
+        return Response({'message': 'Payment was not successful'}, status=400)
+        

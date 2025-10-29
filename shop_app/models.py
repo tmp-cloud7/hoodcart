@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.db import models
 from django.utils.text import slugify
+import uuid
 
 # Create your models here.
 class Product(models.Model):
@@ -50,9 +51,9 @@ class CartItem(models.Model):
         return f'{self.quantity} x {self.product.name} in cart {self.cart.id}'
     
 class Transaction(models.Model):
-    ref: models.CharField(max_length=225, unique=True)
-    cart: models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='transactions')
-    amount: models.DecimalField(max_digits=10, decimal_places=2)
+    ref= models.CharField(max_length=225, unique=True)
+    cart= models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='transactions')
+    amount= models.DecimalField(max_digits=10, decimal_places=2, default=0)
     currency = models.CharField(max_length=10, default='NGN')
     status = models.CharField(max_length=20, default='pending') # Can be pending, successful or failed
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, blank=True)
