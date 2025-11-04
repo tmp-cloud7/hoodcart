@@ -289,3 +289,30 @@ def initiate_payment_paypal(request):
             return Response({"error": payment.error}, status=400)
 
 
+
+@api_view(["POST", "GET"])
+def paypal_payment_callback(request):
+    payment_id = request.query_params.get('paymentId')
+    payer_id = request.query_params.get('PayerID')
+    ref = request.query_params.get('ref')
+
+    user = request.user
+
+    print("refff", ref)
+
+    transaction = Transaction.objects.get(ref=ref)
+
+    if payment_id and payer_id:
+        # Fetch Payment Object Using Paypal SDK
+        payment = paypalrestsdk.Payment.find(payment_id)
+
+        transaction.status = 'completed'
+        transaction.save()
+        cart = transaction.cart
+        cart.paid = True
+        cart.user = user
+        cart.save()
+
+        return Response({'message': 'Payment successful', 'subMessage': 'You have successfully made payment for the item you purchased 😍'})
+    else:
+        return Response({"error": "invalid payment details"}, status=400)
