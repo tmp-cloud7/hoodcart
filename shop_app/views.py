@@ -9,9 +9,16 @@ from decimal import Decimal
 import uuid
 from django.conf import settings
 import requests
+import paypalrestsdk
 # Create your views here.
 
 BASE_URL = "http://localhost:5173"
+
+paypalrestsdk.configure({
+    "mode": settings.PAYPAL_MODE, # 'sandbox' or 'live'
+    "client_id": settings.PAYPAL_CLIENT_ID,
+    "client_secret": settings.PAYPAL_CLIENT_SECRET
+})
 
 @api_view(["GET"])
 def products(request):
@@ -218,3 +225,67 @@ def payment_callback(request):
     else:
         return Response({'message': 'Payment was not successful'}, status=400)
         
+
+
+@api_view(["POST"])
+def initiate_payment_paypal(request):
+    if request.method == 'POST' and request.user.is_authenticated:
+        # Fetch cart and calculate total amount
+        tx_ref = str(uuid.uuid4())
+        user = request.user
+        cart_code = request.data.get("cart_code")
+        cart = Cart.objects.get(cart_code=cart_code)
+        amount = sum(item.product.price * item.quantity for item in cart.items.all())
+        tax = Decimal("4.00")
+        total_amount = amount + tax
+        
+        # Create a paypal payment object
+        payment = paypalrestsdk.Payment({
+            "intent": "sale",
+            "payer": {
+                "payment_method": "paypal"
+            },
+            "redirect_urls": {
+                #use a single redirect url for both success and cancel
+                "return_url": f"{BASE_URL}/payment-status?paymentStatus=success&ref={tx_ref}",
+                "cancel_url": f"{BASE_URL}/payment-status?paymentStatus=cancel"
+            },
+            "transactions": [{
+                "item_list": {
+                    "items": [{
+                        "name":"Cart Items",
+                        "sku": "cart",
+                        "price": str(total_amount),
+                        "currency": "USD",
+                        "quantity": 1
+                    }]
+                },
+                "amount": {
+                    "total": str(total_amount),
+                    "currency": "USD"
+                },
+                "description": "Payment for cart items."
+            }]
+        })
+
+        print("pay_id", payment)
+
+        transaction, created = Transaction.objects.get_or_create(
+                ref=tx_ref, 
+                cart=cart,
+                amount=total_amount,
+                user=user,
+                status='pending'
+            )
+        
+        if payment.create():
+            # print(payment.links)
+            # Extract paypal approval URL to redirect the user
+            for link in payment.links:
+                if link.rel == "approval_url":
+                    approval_url = str(link.href)
+                    return Response({'approval_url': approval_url})
+        else:
+            return Response({"error": payment.error}, status=400)
+
+
