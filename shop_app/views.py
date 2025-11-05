@@ -290,7 +290,7 @@ def initiate_payment_paypal(request):
 
 
 
-@api_view(["POST", "GET"])
+@api_view(["POST"])
 def paypal_payment_callback(request):
     payment_id = request.query_params.get('paymentId')
     payer_id = request.query_params.get('PayerID')
