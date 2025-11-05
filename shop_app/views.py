@@ -11,9 +11,10 @@ import uuid
 from django.conf import settings
 import requests
 import paypalrestsdk
+from django.conf import settings
 # Create your views here.
 
-BASE_URL = "http://localhost:5173"
+BASE_URL = settings.REACT_BASE_URL
 
 paypalrestsdk.configure({
     "mode": settings.PAYPAL_MODE, # 'sandbox' or 'live'

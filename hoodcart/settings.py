@@ -13,6 +13,11 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 from datetime import timedelta
 
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -46,6 +51,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -127,6 +133,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
+STATICFILES_STORAGE: "whitenoise.storage.CompressedManifestStaticFilesStorage"
+STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = 'img/'
 MEDIA_ROOT = BASE_DIR/'media'
 
@@ -152,3 +160,5 @@ FLUTTERWAVE_SECRET_KEY = "FLWSECK_TEST-6c5550d6b3f74710fefb02ccfedd2fc2-X"
 PAYPAL_CLIENT_ID = 'AXCKr1Dj7o6oIUJFSHdQOUDCamBRMyDkrLolme8-FxpCJ2pJ5mp0NxzNxUCJFhlSYCG-C-pRp-0IYUWN'
 PAYPAL_CLIENT_SECRET = 'EMVgPAI8c5TM3yy2LMInCb6Ue_BPsifBYK2uAXFg5wI_zGfhOm34piQb3wLcwOJsYV__6C-X4cGocnHK'
 PAYPAL_MODE = 'sandbox' #or live when ready for production
+
+REACT_BASE_URL = os.getenv("REACT_BASE_URL", "http://localhost:5173")
