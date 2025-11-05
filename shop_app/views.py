@@ -4,7 +4,8 @@ from .models import Cart, CartItem, Product, Transaction
 from .serializers import CartItemSerializer, CartSerializer, ProductSerializer, DetailedProductSerializer, SimpleCartSerializer, UserSerializer
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from django.contrib.auth import get_user_model
 from decimal import Decimal
 import uuid
 from django.conf import settings
@@ -115,6 +116,41 @@ def user_info(request):
     user = request.user
     serializer = UserSerializer(user)
     return Response(serializer.data)
+
+
+User = get_user_model()
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def register_user(request):
+    data = request.data
+
+    if User.objects.filter(username=data.get('username')).exists():
+        return Response({"error": "Username already exists"}, status=status.HTTP_400_BAD_REQUEST)
+    
+    if User.objects.filter(email=data.get('email')).exists():
+        return Response({"error": "Email already exists"}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        user = User.objects.create_user(
+            username=data.get('username'),
+            email=data.get('email'),
+            password=data.get('password'),
+            first_name=data.get('first_name', ''),
+            last_name=data.get('last_name', ''),
+            address=data.get('address', ''),
+            phone=data.get('phone', ''),
+            city=data.get('city', ''),
+            state=data.get('state', '')
+        )
+        user.save()
+
+        return Response(
+            {"message": "User registered successfully"},
+            status=status.HTTP_201_CREATED
+        )
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
