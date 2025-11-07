@@ -5,9 +5,9 @@ import uuid
 
 # Create your models here.
 class Product(models.Model):
-    CATEGORY = (("Printed", "PRINTED"),
-                ("Unisex", "UNISEX"),
-                ("Outdoor", "OUTDOOR")
+    CATEGORY = (("Dumbbells", "DUMBBELLS"),
+                ("Squat stands", "SQUAT STANDS"),
+                ("Treadmills", "TREADMILLS")
                 )
     name = models.CharField(max_length=100)
     slug = models.SlugField(blank=True, null=True)
