@@ -1,6 +1,6 @@
 # 🛒 EnduroCart (Django Backend)
 
-The **EnduroCart Backend** powers the eCommerce platform’s API, handling product data, cart management, and payment processing through **Flutterwave**.
+The **EnduroCart Backend** powers the eCommerce platform’s API, handling product data, cart management, and payment processing through **Flutterwave** & **Paypal**.
 
 It is built with **Django** and **Django REST Framework**, exposing RESTful endpoints consumed by the React frontend.
 
@@ -34,7 +34,7 @@ It is built with **Django** and **Django REST Framework**, exposing RESTful endp
 ### 1️⃣ Clone the repository
 
 ```bash
-git clone https://github.com/yourusername/hoodcart.git
+git clone https://github.com/yourusername/endurocart.git
 cd hoodcart
 ```
 
@@ -109,8 +109,8 @@ http://127.0.0.1:8000/payment_callback/
 ## 🧩 Project Structure
 
 ```
-hoodcart/
-├── hoodcart/             # Core project files
+endurocart/
+├── endurocart/             # Core project files
 ├── shop_app/             # Main Django app
 ├── manage.py
 └── requirements.txt
