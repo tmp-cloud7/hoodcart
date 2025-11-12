@@ -1,6 +1,6 @@
-# 🛒 Hoodcart (Django Backend)
+# 🛒 EnduroCart (Django Backend)
 
-The **Hoodcart Backend** powers the eCommerce platform’s API, handling product data, cart management, and payment processing through **Flutterwave**.
+The **EnduroCart Backend** powers the eCommerce platform’s API, handling product data, cart management, and payment processing through **Flutterwave**.
 
 It is built with **Django** and **Django REST Framework**, exposing RESTful endpoints consumed by the React frontend.
 
